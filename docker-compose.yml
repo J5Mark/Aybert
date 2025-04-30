@@ -1,0 +1,19 @@
+services:
+
+  tested_model:
+    build:
+      context: ./model_docker
+      dockerfile: ./Dockerfile.testmodel
+    volumes:
+      - ./testmodel/model:/model:ro
+    ports:
+      - "8001:8001"
+    restart: unless-stopped
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu, utility, compute]
+    container_name: tested_model

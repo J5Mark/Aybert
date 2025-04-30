@@ -1,0 +1,41 @@
+FROM python:3.10-slim
+
+WORKDIR /app
+
+RUN apt-get update && apt-get install -y \
+    build-essential \
+    gcc \
+    git \
+    && rm -rf /var/lib/apt/lists/*
+
+RUN pip install --no-cache-dir \
+    vllm \
+    bitsandbytes
+
+COPY . ./
+
+EXPOSE 8001
+	
+ENV MODEL_HF="Qwen/Qwen3-4B"
+ENV VLLM_LOGGING_LEVEL=DEBUG
+
+# change max-model-len, gpu-memory-utilization and swap-space and kv-cache-dtype
+# --gpu-memory-utilization 1 \ --swap-space 3 \
+# --chat-template ./chat_template.jinja \
+CMD ["sh", "-c", "vllm serve ${MODEL_HF}\
+    --tokenizer-mode auto \
+    --max-model-len 10000 \
+    --tokenizer ${MODEL_HF} \
+    --trust-remote-code \
+    --gpu-memory-utilization 0.95 \
+    --dtype half \
+    --load_format bitsandbytes \
+    --quantization bitsandbytes \
+    --seed 44 \
+    --enable-prefix-caching \
+    --kv-cache-dtype fp8 \
+    --host 0.0.0.0 \
+    --enable-request-id-headers \
+    --enable-auto-tool-choice \
+    --tool-call-parser hermes \
+    --port 8001"]

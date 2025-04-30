@@ -1,0 +1,11 @@
+{% for message in messages %}
+{% if message['role'] == 'system' %}
+<|im_start|>system
+{{ message['content'] }}<|im_end|>
+{% else %}
+<|im_start|>{{ message['role'] }}
+{{ message['content'] }}<|im_end|>
+{% endif %}
+{% endfor %}
+{% if add_generation_prompt %}<|im_start|>assistant
+{% endif %}
